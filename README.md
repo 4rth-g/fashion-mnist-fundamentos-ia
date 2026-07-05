@@ -42,9 +42,8 @@ Cada notebook tem uma célula de *setup* no topo que, ao detectar o Colab, clona
 repositório e ajusta o ambiente automaticamente. Depois de publicar o projeto no
 GitHub, atualize a variável `REPO_URL` nessa célula e use os links:
 
-<!-- Substitua SEU-USUARIO pelo seu usuário do GitHub -->
-[![EDA no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SEU-USUARIO/mnist-fundamentos-ia/blob/main/notebooks/01_eda.ipynb)
-[![CNN no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SEU-USUARIO/mnist-fundamentos-ia/blob/main/notebooks/02_cnn.ipynb)
+[![EDA no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/mnist-fundamentos-ia/blob/main/notebooks/01_eda.ipynb)
+[![CNN no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/mnist-fundamentos-ia/blob/main/notebooks/02_cnn.ipynb)
 
 ## Hardware (aceleração opcional)
 
