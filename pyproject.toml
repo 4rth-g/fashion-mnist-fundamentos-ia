@@ -1,0 +1,29 @@
+[project]
+name = "mnist-fundamentos-ia"
+version = "0.1.0"
+description = "Classificação do MNIST com uma CNN (LeNet) — trabalho de Fundamentos de IA"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "pandas>=2.2",
+    "scikit-learn>=1.4",
+    "jupyterlab>=4.0",
+    "ipykernel>=6.29",
+]
+
+# Por padrão instalamos o PyTorch para CPU — funciona em qualquer máquina e é o
+# baseline universal para os colegas. Quem tiver GPU (Intel Arc, NVIDIA, AMD)
+# reinstala o torch com o índice apropriado (ver README, seção "Hardware").
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }

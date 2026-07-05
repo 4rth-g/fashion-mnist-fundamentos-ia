@@ -1,0 +1,29 @@
+# Dataset MNIST (baixado automaticamente pelo torchvision)
+data/
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Modelos treinados (arquivos grandes)
+models/*.pt
+models/*.pth
+models/*.ckpt
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Typst — PDFs compilados (opcional versionar; por padrão ignorados)
+docs/*.pdf
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
