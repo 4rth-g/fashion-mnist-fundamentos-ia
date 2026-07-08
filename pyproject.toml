@@ -1,7 +1,7 @@
 [project]
-name = "mnist-fundamentos-ia"
+name = "fashion-mnist-fundamentos-ia"
 version = "0.1.0"
-description = "Classificação do MNIST com uma CNN (LeNet) — trabalho de Fundamentos de IA"
+description = "Classificação do Fashion-MNIST com uma CNN (LeNet) — trabalho de Fundamentos de IA"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [

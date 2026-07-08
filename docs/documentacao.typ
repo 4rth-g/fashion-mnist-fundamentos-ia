@@ -1,8 +1,8 @@
-// Documentação complementar — Classificação do MNIST com CNN
+// Documentação complementar — Classificação do Fashion-MNIST com CNN
 // Compilar com:  typst compile documentacao.typ
 // (ou `typst watch documentacao.typ` para recompilar ao salvar)
 
-#set document(title: "MNIST + CNN — Documentação", author: "Arthur Grazzia")
+#set document(title: "Fashion-MNIST + CNN — Documentação", author: "Arthur Grazzia")
 #set page(numbering: "1", margin: 2.2cm)
 #set text(font: "New Computer Modern", size: 11pt, lang: "pt")
 #set par(justify: true, leading: 0.68em)
@@ -12,7 +12,7 @@
 #show raw: set text(font: "DejaVu Sans Mono", size: 9.5pt)
 
 #align(center)[
-  #text(18pt, weight: "bold")[Classificação de Dígitos Manuscritos (MNIST)] \
+  #text(18pt, weight: "bold")[Classificação de Peças de Roupa (Fashion-MNIST)] \
   #text(14pt)[com uma Rede Neural Convolucional] \
   #v(0.3em)
   #text(11pt, style: "italic")[Documentação complementar — Fundamentos de IA]
@@ -22,17 +22,19 @@
 #outline(title: "Sumário", indent: auto)
 #line(length: 100%, stroke: 0.5pt + gray)
 
-= O dataset MNIST
+= O dataset Fashion-MNIST
 
-O *MNIST* (_Modified National Institute of Standards and Technology_) é o conjunto
-de dados mais clássico da área de reconhecimento de imagens. Contém *70.000 imagens*
-de dígitos manuscritos (0 a 9):
+O *Fashion-MNIST* é um conjunto de imagens de *peças de roupa* publicado pela Zalando
+como um substituto _drop-in_ do MNIST clássico: mesmo formato e mesma divisão, porém
+*mais difícil* e mais representativo de tarefas reais de visão computacional. Contém
+*70.000 imagens*:
 
 - *60.000* imagens para *treino* e *10.000* para *teste*;
 - cada imagem é *28 × 28 pixels*, em *tons de cinza* (1 canal), com valores de
   intensidade de 0 (preto) a 255 (branco);
-- as classes são os dez dígitos, e o dataset é *aproximadamente balanceado*
-  (~6.000 exemplos por dígito no treino).
+- são *10 classes* — Camiseta/top, Calça, Pulôver, Vestido, Casaco, Sandália, Camisa,
+  Tênis, Bolsa e Bota — e o dataset é *perfeitamente balanceado*
+  (6.000 exemplos por classe no treino).
 
 == Pré-processamento
 
@@ -40,8 +42,8 @@ Antes de entrar na rede, cada imagem passa por duas transformações:
 
 + *`ToTensor`*: converte a imagem em um tensor de números reais na faixa $[0, 1]$
   (divide por 255);
-+ *`Normalize`*: recentraliza os pixels usando a média $mu = 0{.}1307$ e o desvio
-  padrão $sigma = 0{.}3081$ do MNIST, aplicando
++ *`Normalize`*: recentraliza os pixels usando a média $mu = 0{.}2860$ e o desvio
+  padrão $sigma = 0{.}3530$ do Fashion-MNIST, aplicando
   $ x' = (x - mu) / sigma. $
   Isso deixa os dados com média $approx 0$ e desvio $approx 1$, o que acelera e
   estabiliza o treino (os gradientes ficam melhor condicionados).
@@ -54,6 +56,13 @@ acompanhar o aprendizado e escolher o melhor modelo. O *conjunto de teste é usa
 única vez*, ao final — nunca para ajustar hiperparâmetros. Ignorar essa separação
 causa *vazamento de dados* (_data leakage_) e infla artificialmente a acurácia
 reportada.
+
+Aplica-se ainda uma *data augmentation* leve — um recorte aleatório com borda de 2px
+(`RandomCrop`) e um espelhamento horizontal (`RandomHorizontalFlip`) — *apenas ao
+conjunto de treino*. Isso cria pequenas variações das peças a cada época e reduz o
+_overfitting_. Validação e teste são avaliados *sem* augmentation; por isso o
+conjunto de treino é carregado com dois _transforms_ diferentes, reaproveitando os
+mesmos índices do split para que nenhuma imagem de validação receba augmentation.
 
 = Arquitetura da CNN
 
@@ -106,7 +115,7 @@ O _pooling_ reduz a resolução espacial pegando o *valor máximo* de cada janel
 $2 times 2$:
 $ y_(i,j) = max_(0 <= m,n < 2) x_(2i+m, space 2j+n). $
 Isso diminui o custo computacional, dá uma pequena *invariância a translações*
-(o dígito pode estar levemente deslocado) e resume a informação mais forte de cada
+(a peça pode estar levemente deslocada) e resume a informação mais forte de cada
 região.
 
 == _Flatten_ e camadas totalmente conectadas (`Linear`)
@@ -176,5 +185,5 @@ sensível à escolha da taxa de aprendizado.
   inflando a acurácia reportada.
 / Acurácia: fração de exemplos classificados corretamente.
 / Matriz de confusão: tabela que mostra, para cada classe real, como o modelo
-  distribuiu suas previsões — útil para ver *quais* dígitos são confundidos.
+  distribuiu suas previsões — útil para ver *quais* classes são confundidas.
 / AMP (_mixed precision_): uso de números de 16 bits para acelerar o treino em GPU.
