@@ -1,5 +1,5 @@
 """
-utils.py — funções de apoio do projeto MNIST (Fundamentos de IA).
+utils.py — funções de apoio do projeto Fashion-MNIST (Fundamentos de IA).
 
 Concentra aqui a parte "de infraestrutura" (seleção de hardware, sementes,
 carregamento e divisão dos dados) para que os notebooks fiquem curtos e
@@ -8,8 +8,8 @@ focados no que importa: a rede neural e os resultados.
 Organização:
     1. Caminhos do projeto        -> PROJECT_ROOT, DATA_DIR, ...
     2. Reprodutibilidade          -> seed_everything()
-    3. Seleção de dispositivo     -> get_device(), autocast_ctx(), ...
-    4. Dados (MNIST)              -> get_transform(), make_dataloaders()
+    3. Seleção de dispositivo     -> get_device(), loader_kwargs()
+    4. Dados (Fashion-MNIST)      -> get_transform(), make_dataloaders()
 
 Compatível com Intel Arc (XPU), NVIDIA (CUDA), AMD (ROCm via CUDA / DirectML),
 Apple Silicon (MPS) e CPU — a mesma linha de código roda em qualquer um.
@@ -17,14 +17,13 @@ Apple Silicon (MPS) e CPU — a mesma linha de código roda em qualquer um.
 
 from __future__ import annotations
 
-import contextlib
 import os
 import random
 from pathlib import Path
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset, random_split
 from torchvision import datasets, transforms
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -42,10 +41,25 @@ MODELS_DIR = PROJECT_ROOT / "models"
 for _d in (DATA_DIR, FIGURES_DIR, RESULTS_DIR, MODELS_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
-# Estatísticas oficiais do MNIST (média e desvio-padrão do conjunto de treino),
+# Estatísticas do Fashion-MNIST (média e desvio-padrão do conjunto de treino),
 # usadas para normalizar as imagens para média ~0 e desvio ~1.
-MNIST_MEAN = 0.1307
-MNIST_STD = 0.3081
+FASHION_MEAN = 0.2860
+FASHION_STD = 0.3530
+
+# Nomes das 10 classes do Fashion-MNIST (índice = rótulo). Em português, para os
+# gráficos da EDA, a matriz de confusão e o relatório de classificação.
+CLASS_NAMES = [
+    "Camiseta/top",  # 0 — T-shirt/top
+    "Calça",         # 1 — Trouser
+    "Pulôver",       # 2 — Pullover
+    "Vestido",       # 3 — Dress
+    "Casaco",        # 4 — Coat
+    "Sandália",      # 5 — Sandal
+    "Camisa",        # 6 — Shirt
+    "Tênis",         # 7 — Sneaker
+    "Bolsa",         # 8 — Bag
+    "Bota",          # 9 — Ankle boot
+]
 
 SEED = 42  # semente única do projeto (reprodutibilidade)
 
@@ -123,18 +137,6 @@ def get_device(prefer: str | None = None, verbose: bool = True) -> torch.device:
     return device
 
 
-def autocast_ctx(device: torch.device, enabled: bool = True):
-    """Context manager de precisão mista (AMP), acelera o treino em GPU.
-
-    CUDA -> float16 · XPU/CPU -> bfloat16 · MPS -> desabilitado (suporte parcial).
-    """
-    dev = device.type
-    if not enabled or dev == "mps":
-        return contextlib.nullcontext()
-    dtype = torch.float16 if dev == "cuda" else torch.bfloat16
-    return torch.autocast(device_type=dev, dtype=dtype)
-
-
 def loader_kwargs(device: torch.device, num_workers: int | None = None) -> dict:
     """kwargs recomendados para o DataLoader conforme o dispositivo."""
     pin = device.type in ("cuda", "xpu")
@@ -146,37 +148,44 @@ def loader_kwargs(device: torch.device, num_workers: int | None = None) -> dict:
     return kw
 
 
-def synchronize(device: torch.device) -> None:
-    """Sincroniza a GPU antes de medir tempo (no-op em CPU)."""
-    if device.type == "cuda":
-        torch.cuda.synchronize()
-    elif device.type == "xpu":
-        torch.xpu.synchronize()
-    elif device.type == "mps":
-        torch.mps.synchronize()
-
-
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. Dados (MNIST)
+# 4. Dados (Fashion-MNIST)
 # ─────────────────────────────────────────────────────────────────────────────
 def get_transform(normalize: bool = True) -> transforms.Compose:
     """Pipeline de pré-processamento.
 
     `ToTensor` converte a imagem PIL (0–255) em tensor float (0–1);
-    `Normalize` centra os pixels usando média/desvio do MNIST. Para *visualizar*
-    imagens na EDA, use `normalize=False` (mantém a escala 0–1, mais legível).
+    `Normalize` centra os pixels usando média/desvio do Fashion-MNIST. Para
+    *visualizar* imagens na EDA, use `normalize=False` (mantém a escala 0–1,
+    mais legível).
     """
     steps = [transforms.ToTensor()]
     if normalize:
-        steps.append(transforms.Normalize((MNIST_MEAN,), (MNIST_STD,)))
+        steps.append(transforms.Normalize((FASHION_MEAN,), (FASHION_STD,)))
     return transforms.Compose(steps)
 
 
-def load_mnist(normalize: bool = True):
+def get_train_transform() -> transforms.Compose:
+    """Transform de TREINO com data augmentation leve.
+
+    Um pequeno deslocamento (`RandomCrop` com borda de 2px) e espelhamento
+    horizontal geram variações plausíveis das peças a cada época, o que ajuda a
+    rede a generalizar (menos overfitting). É aplicado *só no treino*: validação e
+    teste usam `get_transform()` (sem augmentation), para uma avaliação honesta.
+    """
+    return transforms.Compose([
+        transforms.RandomCrop(28, padding=2),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((FASHION_MEAN,), (FASHION_STD,)),
+    ])
+
+
+def load_fashion_mnist(normalize: bool = True):
     """Baixa (se preciso) e retorna os datasets (treino_completo, teste)."""
     tfm = get_transform(normalize=normalize)
-    train_full = datasets.MNIST(root=str(DATA_DIR), train=True, download=True, transform=tfm)
-    test = datasets.MNIST(root=str(DATA_DIR), train=False, download=True, transform=tfm)
+    train_full = datasets.FashionMNIST(root=str(DATA_DIR), train=True, download=True, transform=tfm)
+    test = datasets.FashionMNIST(root=str(DATA_DIR), train=False, download=True, transform=tfm)
     return train_full, test
 
 
@@ -185,6 +194,7 @@ def make_dataloaders(
     val_size: int = 10_000,
     device: torch.device | None = None,
     seed: int = SEED,
+    augment: bool = True,
 ):
     """Cria os três DataLoaders com divisão metodologicamente correta.
 
@@ -192,19 +202,30 @@ def make_dataloaders(
     de forma reproduzível. O conjunto de TESTE (10k) permanece intocado e só deve
     ser usado UMA vez, na avaliação final — nunca para escolher hiperparâmetros.
 
+    Com `augment=True`, o treino recebe data augmentation (ver `get_train_transform`)
+    enquanto validação e teste ficam sem augmentation — daí carregarmos o dataset
+    de treino duas vezes (uma com cada transform) e reaproveitarmos EXATAMENTE os
+    mesmos índices do split, garantindo que nenhuma imagem de validação vaze o
+    augmentation nem apareça no treino.
+
     Retorna: (train_loader, val_loader, test_loader).
     """
     if device is None:
         device = torch.device("cpu")
 
-    train_full, test = load_mnist(normalize=True)
+    train_tfm = get_train_transform() if augment else get_transform(normalize=True)
+    train_aug = datasets.FashionMNIST(root=str(DATA_DIR), train=True, download=True, transform=train_tfm)
+    train_plain = datasets.FashionMNIST(root=str(DATA_DIR), train=True, download=True, transform=get_transform(normalize=True))
+    test = datasets.FashionMNIST(root=str(DATA_DIR), train=False, download=True, transform=get_transform(normalize=True))
 
-    n_train = len(train_full) - val_size  # 60000 - 10000 = 50000
+    n_train = len(train_aug) - val_size  # 60000 - 10000 = 50000
     gen = torch.Generator().manual_seed(seed)
-    train_set, val_set = random_split(train_full, [n_train, val_size], generator=gen)
+    train_split, val_split = random_split(train_aug, [n_train, val_size], generator=gen)
+    # Validação: mesmos índices do split, porém no dataset SEM augmentation.
+    val_set = Subset(train_plain, val_split.indices)
 
     kw = loader_kwargs(device)
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, generator=gen, **kw)
+    train_loader = DataLoader(train_split, batch_size=batch_size, shuffle=True, generator=gen, **kw)
     val_loader = DataLoader(val_set, batch_size=256, shuffle=False, **kw)
     test_loader = DataLoader(test, batch_size=256, shuffle=False, **kw)
     return train_loader, val_loader, test_loader
