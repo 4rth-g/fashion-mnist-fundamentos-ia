@@ -63,6 +63,7 @@ reinstale o `torch` com o índice correto **depois** do `uv sync`:
 | Hardware | Backend | Como instalar o PyTorch |
 |---|---|---|
 | **Intel Arc B580** (Windows) | XPU | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/xpu` + [driver Intel Arc](https://www.intel.com/content/www/us/en/download/785597/) |
+| **Intel Arc B580** (Linux, cp313) | XPU | `uv pip install --reinstall torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/xpu` — versões travadas em par: é o build XPU mais recente disponível para Linux/cp313 (torchvision `0.22.0+xpu` exige `torch==2.7.0` exato). Requer runtime Intel (`intel-opencl-icd`, `libze-intel-gpu1`) e driver de kernel `xe` já carregado |
 | **NVIDIA** (Linux/Windows) | CUDA | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu124` |
 | **Google Colab** | CUDA (T4) | já vem pronto — nada a instalar |
 | **AMD** (Linux) | ROCm | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2` (aparece como `cuda`) |
