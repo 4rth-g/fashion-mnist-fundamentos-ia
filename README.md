@@ -14,8 +14,8 @@ Intel Arc, NVIDIA, AMD, Apple Silicon ou CPU — e também no **Google Colab**.
 
 ## Integrantes
 
-_PREENCHER — nome completo de cada integrante do grupo (todos devem estar identificados
-aqui, no GitHub e no vídeo)._
+- Arthur de Azevedo Grazzia
+- Rafael Rocha da Silva
 
 ## Objetivo e tipo da tarefa
 
