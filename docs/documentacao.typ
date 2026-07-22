@@ -64,6 +64,90 @@ _overfitting_. Validação e teste são avaliados *sem* augmentation; por isso o
 conjunto de treino é carregado com dois _transforms_ diferentes, reaproveitando os
 mesmos índices do split para que nenhuma imagem de validação receba augmentation.
 
+Essa mesma divisão (50.000 treino, 10.000 validação, 10.000 teste) é reaproveitada pelos
+modelos de *baseline* (`SGDClassifier`, `RandomForestClassifier`) descritos na próxima
+seção — garantindo que os números reportados sejam diretamente comparáveis com os da CNN.
+
+= Baseline: SGDClassifier e RandomForestClassifier
+
+Além da CNN, o projeto treina dois modelos clássicos de Scikit-Learn — *SGDClassifier* e
+*RandomForestClassifier* — usados como *baseline*: um patamar de comparação mais simples,
+que ajuda a mostrar se a complexidade extra da CNN realmente se traduz em ganho de
+desempenho. Este é também o requisito mínimo de modelos exigido pelo enunciado do trabalho
+para tarefas de classificação.
+
+== Por que um baseline
+
+Diferente da CNN, esses modelos não enxergam a estrutura espacial da imagem — cada pixel é
+tratado como um atributo independente, sem noção de vizinhança. Se a CNN não superasse esses
+baselines mais simples, isso seria um sinal de que a complexidade extra (convolução, mais
+parâmetros, mais tempo de treino) não estaria trazendo benefício real.
+
+== Preparação dos dados
+
+`SGDClassifier` e `RandomForestClassifier` esperam uma matriz 2D `(n_amostras, n_atributos)`,
+não um tensor de imagem. O pré-processamento é, portanto, mais simples que o da CNN:
+
++ *Achatamento (_flatten_)*: cada imagem $28 times 28$ vira um vetor de *784 atributos*
+  (um por pixel).
++ *Escala*: os pixels são usados na faixa $[0, 1]$ (após `ToTensor`, sem a normalização
+  Z-score usada na CNN). Essa escala já é adequada para os dois modelos — o
+  `RandomForestClassifier` é invariante à escala dos atributos (decide por _splits_, não por
+  distância), e o `SGDClassifier` já trabalha bem com atributos numa faixa pequena e
+  comparável entre si. Por isso, *não se aplica um `StandardScaler` adicional*.
++ *Separação estratificada*: os 60.000 exemplos de treino são divididos em *50.000 treino* /
+  *10.000 validação*, preservando a proporção das 10 classes em cada subconjunto
+  (`stratify=y`) — mais rigoroso que uma divisão puramente aleatória.
+
+== SGDClassifier
+
+Um classificador *linear*, treinado por *gradiente descendente estocástico*: a cada passo,
+ajusta os pesos usando um pequeno lote de exemplos, na direção que reduz o erro. É rápido
+mesmo em datasets grandes, mas só consegue separar as classes por combinações *lineares* dos
+784 pixels — não captura relações não lineares nem a proximidade espacial entre eles.
+
+== RandomForestClassifier
+
+Uma *floresta aleatória*: um conjunto (_ensemble_) de várias árvores de decisão, cada uma
+treinada em um subconjunto aleatório dos dados e dos atributos. A previsão final é a
+*votação da maioria* das árvores. Cada árvore consegue aprender combinações simples e não
+lineares entre pixels (ex.: "se o pixel $x$ é claro *e* o pixel $y$ é escuro..."), mas ainda
+sem noção de vizinhança espacial — algo que só a convolução da CNN explora de fato.
+
+== Metodologia de comparação
+
+A mesma divisão treino/validação/teste descrita na seção anterior ("Metodologia: treino,
+validação e teste") é reaproveitada aqui: a *validação* escolhe entre os dois baselines
+(nunca o teste), e o vencedor é avaliado *uma única vez* no conjunto de teste, lado a lado
+com a CNN.
+
+== Resultados
+
+#table(
+  columns: (auto, auto, auto, auto),
+  align: (left, center, center, center),
+  stroke: 0.5pt + gray,
+  table.header([*Modelo*], [*Acurácia (validação)*], [*Acurácia (teste)*], [*F1 macro (teste)*]),
+  [SGDClassifier],                    [0,8452], [---],    [---],
+  [RandomForestClassifier _(vencedor)_], [0,8836], [0,8731], [0,8715],
+  [CNN (`02_cnn.ipynb`)],             [0,9062], [0,9024], [0,9011],
+  [CNN + tuning (`03_tuning.ipynb`)], [0,9236], [0,9137], [0,9140],
+)
+
+_O `SGDClassifier` não tem acurácia de teste: como perdeu para o `RandomForestClassifier`
+na validação, ele nunca toca o conjunto de teste — tocar o teste com um modelo que não foi
+escolhido violaria a regra de "o teste é usado uma única vez", mesmo sem ajustar
+hiperparâmetros a partir dele._
+
+O `RandomForestClassifier` venceu o baseline (88,36% na validação) e, avaliado uma única vez
+no teste, atingiu *87,31%* de acurácia. A CNN supera esse baseline em cerca de *2,9 pontos
+percentuais* (90,24% vs. 87,31% no teste) — evidência de que a convolução realmente ajuda a
+capturar padrões que os 784 pixels tratados independentemente não capturam. O ajuste de
+hiperparâmetros (`lr = 0,002`, `dropout = 0,2`, `weight_decay = 0`) leva a CNN a *91,37%* no
+teste, um ganho adicional modesto (~1,1 ponto percentual) sobre a configuração fixa —
+consistente com o que se espera de um _fine-tuning_: o maior salto de desempenho vem da
+escolha da arquitetura (CNN vs. baseline), não do ajuste fino de hiperparâmetros.
+
 = Arquitetura da CNN
 
 Uma *Rede Neural Convolucional* (CNN) processa a imagem preservando sua estrutura
@@ -187,3 +271,9 @@ sensível à escolha da taxa de aprendizado.
 / Matriz de confusão: tabela que mostra, para cada classe real, como o modelo
   distribuiu suas previsões — útil para ver *quais* classes são confundidas.
 / AMP (_mixed precision_): uso de números de 16 bits para acelerar o treino em GPU.
+/ _Baseline_: modelo mais simples usado como referência, para avaliar se um modelo mais
+  complexo (aqui, a CNN) realmente compensa a complexidade extra.
+/ Estratificação: dividir os dados preservando a proporção de cada classe em cada
+  subconjunto (treino, validação, teste).
+/ _Ensemble_: modelo composto pela combinação de vários modelos mais simples — a floresta
+  aleatória, por exemplo, combina a previsão de várias árvores de decisão.
