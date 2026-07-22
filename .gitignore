@@ -11,9 +11,11 @@ models/*.pt
 models/*.pth
 models/*.ckpt
 
+# resultados gerados automaticamente
+results/
+
 # Jupyter
 .ipynb_checkpoints/
-notebooks/.ipynb_checkpoints/
 
 # Python
 __pycache__/
