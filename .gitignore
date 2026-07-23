@@ -22,8 +22,11 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Typst — PDFs compilados (opcional versionar; por padrão ignorados)
+# Typst — PDFs compilados (por padrão ignorados)
 docs/*.pdf
+# exceções versionadas (entregáveis): slide de apresentação e documentação compilada
+!docs/fashion-mnist-slides.pdf
+!docs/documentacao.pdf
 
 # IDE / OS
 .idea/

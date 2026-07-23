@@ -2,7 +2,10 @@
 // Compilar com:  typst compile documentacao.typ
 // (ou `typst watch documentacao.typ` para recompilar ao salvar)
 
-#set document(title: "Fashion-MNIST + CNN — Documentação", author: "Arthur Grazzia")
+#set document(
+  title: "Fashion-MNIST + CNN — Documentação",
+  author: ("Arthur de Azevedo Grazzia", "Rafael Rocha da Silva"),
+)
 #set page(numbering: "1", margin: 2.2cm)
 #set text(font: "New Computer Modern", size: 11pt, lang: "pt")
 #set par(justify: true, leading: 0.68em)
@@ -21,6 +24,13 @@
 #v(0.5em)
 #outline(title: "Sumário", indent: auto)
 #line(length: 100%, stroke: 0.5pt + gray)
+
+#block(inset: 8pt, fill: luma(245), radius: 4pt, width: 100%)[
+  *Materiais do projeto.* O slide de apresentação está em
+  `docs/fashion-mnist-slides.pdf`. Os demais materiais complementares (slides em
+  edição, vídeo e arquivos grandes não versionados no Git) ficam numa pasta do
+  Google Drive, cujo link está em `docs/link-drive.txt`.
+]
 
 = O dataset Fashion-MNIST
 
@@ -131,8 +141,11 @@ com a CNN.
   [SGDClassifier],                    [0,8452], [---],    [---],
   [RandomForestClassifier _(vencedor)_], [0,8836], [0,8731], [0,8715],
   [CNN (`02_cnn.ipynb`)],             [0,9062], [0,9024], [0,9011],
-  [CNN + tuning (`03_tuning.ipynb`)], [0,9236], [0,9137], [0,9140],
+  [CNN + tuning (`03_tuning.ipynb`)], [0,9246], [0,9204], [0,9203],
 )
+
+#text(9pt)[_Números da CNN + tuning extraídos de `results/grid_results.json` (grid
+executado na GPU em 2026-07-22); os demais, dos respectivos notebooks._]
 
 _O `SGDClassifier` não tem acurácia de teste: como perdeu para o `RandomForestClassifier`
 na validação, ele nunca toca o conjunto de teste — tocar o teste com um modelo que não foi
@@ -143,10 +156,15 @@ O `RandomForestClassifier` venceu o baseline (88,36% na validação) e, avaliado
 no teste, atingiu *87,31%* de acurácia. A CNN supera esse baseline em cerca de *2,9 pontos
 percentuais* (90,24% vs. 87,31% no teste) — evidência de que a convolução realmente ajuda a
 capturar padrões que os 784 pixels tratados independentemente não capturam. O ajuste de
-hiperparâmetros (`lr = 0,002`, `dropout = 0,2`, `weight_decay = 0`) leva a CNN a *91,37%* no
-teste, um ganho adicional modesto (~1,1 ponto percentual) sobre a configuração fixa —
-consistente com o que se espera de um _fine-tuning_: o maior salto de desempenho vem da
-escolha da arquitetura (CNN vs. baseline), não do ajuste fino de hiperparâmetros.
+hiperparâmetros (`lr = 0,002`, `dropout = 0,2`, `weight_decay = 0`) leva a CNN a *92,04%* no
+teste, um ganho adicional de ~1,8 ponto percentual sobre a configuração fixa — consistente
+com o que se espera de um _fine-tuning_: o maior salto de desempenho vem da escolha da
+arquitetura (CNN vs. baseline), não do ajuste fino de hiperparâmetros.
+
+A classe mais difícil para a CNN foi *Camisa* (recall $approx 0{,}628$), frequentemente
+confundida com Camiseta/top e Pulôver — coerente com a análise exploratória, em que essas
+três classes já apareciam visualmente parecidas nas imagens médias por classe. Esse é o tipo
+de padrão que a *matriz de confusão* (ver glossário) evidencia.
 
 = Arquitetura da CNN
 
@@ -277,3 +295,16 @@ sensível à escolha da taxa de aprendizado.
   subconjunto (treino, validação, teste).
 / _Ensemble_: modelo composto pela combinação de vários modelos mais simples — a floresta
   aleatória, por exemplo, combina a previsão de várias árvores de decisão.
+
+= Referências
+
+- H. Xiao, K. Rasul, R. Vollgraf. *Fashion-MNIST: a Novel Image Dataset for Benchmarking
+  Machine Learning Algorithms*. arXiv:1708.07747, 2017.
+  #link("https://github.com/zalandoresearch/fashion-mnist")
+- Y. LeCun, L. Bottou, Y. Bengio, P. Haffner. *Gradient-Based Learning Applied to Document
+  Recognition*. Proceedings of the IEEE, 86(11):2278–2324, 1998. (arquitetura LeNet)
+- A. Paszke et al. *PyTorch: An Imperative Style, High-Performance Deep Learning Library*.
+  NeurIPS, 2019. #link("https://pytorch.org")
+- F. Pedregosa et al. *Scikit-learn: Machine Learning in Python*. JMLR 12:2825–2830, 2011.
+  #link("https://scikit-learn.org")
+- D. P. Kingma, J. Ba. *Adam: A Method for Stochastic Optimization*. ICLR, 2015.

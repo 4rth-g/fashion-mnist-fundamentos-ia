@@ -1,0 +1,11 @@
+Pasta do Google Drive do projeto (Fashion-MNIST — Fundamentos de IA)
+====================================================================
+
+Materiais complementares hospedados no Drive (slides em edição, vídeo de
+apresentação, e outros arquivos grandes que não são versionados no Git):
+
+https://drive.google.com/drive/folders/1fnZc1bltQuY7eVhtHnrGgfs78Gn5RABO?usp=drive_link
+
+O slide de apresentação (docs/fashion-mnist-slides.pdf) e a documentação
+complementar compilada (docs/documentacao.pdf) também estão versionados no
+repositório.

@@ -39,9 +39,13 @@ fashion-mnist-fundamentos-ia/
 │   ├── 02_cnn.ipynb       # modelo principal: CNN, treino e avaliação
 │   └── 03_tuning.ipynb    # ajuste de hiperparâmetros da CNN (grid search)
 ├── docs/
-│   └── documentacao.typ  # doc complementar (dataset, CNN, matemática, glossário) → PDF
+│   ├── documentacao.typ         # doc complementar (dataset, CNN, matemática, glossário)
+│   ├── documentacao.pdf         # PDF compilado da doc (versionado)
+│   ├── fashion-mnist-slides.pdf # slide de apresentação (versionado)
+│   └── link-drive.txt           # link da pasta do Google Drive do projeto
 ├── figures/              # gráficos gerados pelos notebooks
-├── results/              # métricas (baseline_metrics.json, metrics.json, grid_results.json)
+├── results/              # métricas geradas ao rodar os notebooks (baseline_metrics.json,
+│                         #   metrics.json, grid_results.json); pasta gitignored
 ├── models/               # pesos treinados (gitignored)
 └── data/                 # Fashion-MNIST (baixado automaticamente, gitignored)
 ```
@@ -150,11 +154,19 @@ parecidas nas imagens médias por classe.
 
 `docs/documentacao.typ` explica o dataset (Fashion-MNIST), cada operação da CNN, a base matemática
 (convolução, ReLU, pooling, softmax, entropia cruzada, backpropagation, Adam) e um
-glossário. Compile o PDF com:
+glossário. O PDF já compilado está versionado em `docs/documentacao.pdf`; para
+regenerá-lo após editar o `.typ`:
 
 ```bash
 typst compile docs/documentacao.typ
 ```
+
+## Slides e pasta do Drive
+
+- **Slide de apresentação:** `docs/fashion-mnist-slides.pdf` (versionado no repositório).
+- **Pasta do Google Drive:** os materiais complementares (slides em edição, vídeo de
+  apresentação e outros arquivos grandes que não vão para o Git) ficam numa pasta do
+  Google Drive, cujo link está em **`docs/link-drive.txt`**.
 
 ## Divisão das contribuições
 
