@@ -4,145 +4,145 @@
       "lr": 0.002,
       "dropout": 0.2,
       "weight_decay": 0.0,
+      "val_acc": 0.9203
+    },
+    {
+      "lr": 0.002,
+      "dropout": 0.2,
+      "weight_decay": 0.0001,
+      "val_acc": 0.9129
+    },
+    {
+      "lr": 0.002,
+      "dropout": 0.3,
+      "weight_decay": 0.0,
+      "val_acc": 0.9143
+    },
+    {
+      "lr": 0.002,
+      "dropout": 0.3,
+      "weight_decay": 0.0001,
       "val_acc": 0.914
     },
     {
       "lr": 0.002,
-      "dropout": 0.2,
-      "weight_decay": 0.0001,
-      "val_acc": 0.9102
-    },
-    {
-      "lr": 0.002,
-      "dropout": 0.3,
-      "weight_decay": 0.0,
-      "val_acc": 0.9127
-    },
-    {
-      "lr": 0.002,
-      "dropout": 0.3,
-      "weight_decay": 0.0001,
-      "val_acc": 0.9078
-    },
-    {
-      "lr": 0.002,
       "dropout": 0.4,
       "weight_decay": 0.0,
-      "val_acc": 0.9106
+      "val_acc": 0.9101
     },
     {
       "lr": 0.002,
       "dropout": 0.4,
       "weight_decay": 0.0001,
-      "val_acc": 0.9109
-    },
-    {
-      "lr": 0.002,
-      "dropout": 0.5,
-      "weight_decay": 0.0,
-      "val_acc": 0.9058
-    },
-    {
-      "lr": 0.002,
-      "dropout": 0.5,
-      "weight_decay": 0.0001,
-      "val_acc": 0.9086
-    },
-    {
-      "lr": 0.001,
-      "dropout": 0.2,
-      "weight_decay": 0.0,
       "val_acc": 0.9135
     },
     {
+      "lr": 0.002,
+      "dropout": 0.5,
+      "weight_decay": 0.0,
+      "val_acc": 0.907
+    },
+    {
+      "lr": 0.002,
+      "dropout": 0.5,
+      "weight_decay": 0.0001,
+      "val_acc": 0.9025
+    },
+    {
+      "lr": 0.001,
+      "dropout": 0.2,
+      "weight_decay": 0.0,
+      "val_acc": 0.9141
+    },
+    {
       "lr": 0.001,
       "dropout": 0.2,
       "weight_decay": 0.0001,
-      "val_acc": 0.9111
+      "val_acc": 0.91
     },
     {
       "lr": 0.001,
       "dropout": 0.3,
       "weight_decay": 0.0,
-      "val_acc": 0.9067
+      "val_acc": 0.9076
     },
     {
       "lr": 0.001,
       "dropout": 0.3,
       "weight_decay": 0.0001,
-      "val_acc": 0.9056
+      "val_acc": 0.9074
     },
     {
       "lr": 0.001,
       "dropout": 0.4,
+      "weight_decay": 0.0,
+      "val_acc": 0.9102
+    },
+    {
+      "lr": 0.001,
+      "dropout": 0.4,
+      "weight_decay": 0.0001,
+      "val_acc": 0.9051
+    },
+    {
+      "lr": 0.001,
+      "dropout": 0.5,
       "weight_decay": 0.0,
       "val_acc": 0.905
     },
     {
       "lr": 0.001,
-      "dropout": 0.4,
-      "weight_decay": 0.0001,
-      "val_acc": 0.902
-    },
-    {
-      "lr": 0.001,
       "dropout": 0.5,
-      "weight_decay": 0.0,
-      "val_acc": 0.9045
-    },
-    {
-      "lr": 0.001,
-      "dropout": 0.5,
-      "weight_decay": 0.0001,
-      "val_acc": 0.9037
-    },
-    {
-      "lr": 0.0005,
-      "dropout": 0.2,
-      "weight_decay": 0.0,
-      "val_acc": 0.8997
-    },
-    {
-      "lr": 0.0005,
-      "dropout": 0.2,
       "weight_decay": 0.0001,
       "val_acc": 0.9021
     },
     {
       "lr": 0.0005,
+      "dropout": 0.2,
+      "weight_decay": 0.0,
+      "val_acc": 0.8967
+    },
+    {
+      "lr": 0.0005,
+      "dropout": 0.2,
+      "weight_decay": 0.0001,
+      "val_acc": 0.9016
+    },
+    {
+      "lr": 0.0005,
       "dropout": 0.3,
       "weight_decay": 0.0,
-      "val_acc": 0.8946
+      "val_acc": 0.8985
     },
     {
       "lr": 0.0005,
       "dropout": 0.3,
       "weight_decay": 0.0001,
-      "val_acc": 0.8963
+      "val_acc": 0.8965
     },
     {
       "lr": 0.0005,
       "dropout": 0.4,
       "weight_decay": 0.0,
-      "val_acc": 0.8918
+      "val_acc": 0.8975
     },
     {
       "lr": 0.0005,
       "dropout": 0.4,
       "weight_decay": 0.0001,
-      "val_acc": 0.896
+      "val_acc": 0.8981
     },
     {
       "lr": 0.0005,
       "dropout": 0.5,
       "weight_decay": 0.0,
-      "val_acc": 0.8948
+      "val_acc": 0.8951
     },
     {
       "lr": 0.0005,
       "dropout": 0.5,
       "weight_decay": 0.0001,
-      "val_acc": 0.8919
+      "val_acc": 0.8925
     }
   ],
   "best_config": {
@@ -150,10 +150,10 @@
     "dropout": 0.2,
     "weight_decay": 0.0
   },
-  "best_val_accuracy": 0.9236,
-  "test_accuracy": 0.9137,
-  "macro_f1": 0.914030361181618,
+  "best_val_accuracy": 0.9246,
+  "test_accuracy": 0.9204,
+  "macro_f1": 0.920308324451058,
   "epochs_search": 8,
   "epochs_final": 15,
-  "gerado_em": "2026-07-22T11:43:53"
+  "gerado_em": "2026-07-22T22:06:50"
 }

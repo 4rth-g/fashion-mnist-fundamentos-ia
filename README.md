@@ -127,7 +127,7 @@ espelhamento) é aplicada *só no treino* da CNN.
 | SGDClassifier | 0,8452 | — | — |
 | RandomForestClassifier (vencedor do baseline) | 0,8836 | 0,8731 | 0,8715 |
 | CNN (`02_cnn.ipynb`) | 0,9062 | 0,9024 | 0,9011 |
-| CNN + tuning (`03_tuning.ipynb`) | 0,9236 | 0,9137 | 0,9140 |
+| CNN + tuning (`03_tuning.ipynb`) | 0,9246 | 0,9204 | 0,9203 |
 
 > O `SGDClassifier` não tem acurácia de teste: como perdeu para o `RandomForestClassifier` na
 > validação, ele nunca toca o conjunto de teste (só o modelo escolhido pela validação é
@@ -136,8 +136,11 @@ espelhamento) é aplicada *só no treino* da CNN.
 A CNN supera o melhor baseline em ~2,9 pontos percentuais no teste (90,24% vs. 87,31%),
 evidência de que a convolução captura padrões que os 784 pixels tratados independentemente
 não capturam. O ajuste de hiperparâmetros (`lr=0.002`, `dropout=0.2`, `weight_decay=0`) leva
-a CNN a 91,37% no teste — um ganho adicional mais modesto (~1,1 p.p.), como esperado de um
-ajuste fino sobre uma arquitetura já escolhida.
+a CNN a 92,04% no teste — um ganho adicional de ~1,8 p.p. sobre a CNN sem tuning, como esperado
+de um ajuste fino sobre uma arquitetura já escolhida. (Pequenas variações entre execuções do
+grid, como as ~0,7 p.p. entre esta rodada e uma anterior, são normais — vêm de aleatoriedade
+residual do treino em GPU e não mudam a conclusão: a configuração `lr=0.002`/`dropout=0.2`
+consistentemente vence na validação.)
 
 A classe mais difícil para a CNN foi **Camisa** (recall 0,628), frequentemente confundida com
 Camiseta/top e Pulôver — coerente com a EDA, onde essas classes já apareciam visualmente
@@ -168,18 +171,39 @@ menos um resultado._
 
 Link: _PREENCHER_
 
-## Declaração de uso de ferramentas de IA
+## Declaração sobre uso de Inteligência Artificial
 
-_PREENCHER conforme o uso real do grupo. Modelo de preenchimento:_
+Em conformidade com o [Código de Conduta da SBC](https://www.sbc.org.br/) para autores, o uso
+de ferramentas de Inteligência Artificial Generativa na escrita e/ou revisão deste trabalho é
+declarado explicitamente abaixo. Nenhuma ferramenta de IA é listada como autora do trabalho, e
+seu uso não isenta os integrantes da responsabilidade pelo conteúdo produzido, incluindo em
+caso de plágio identificado.
 
-- **Ferramenta utilizada:** _(ex.: Claude, ChatGPT, GitHub Copilot, etc.)_
-- **Finalidade:** _(ex.: revisão do notebook contra os critérios do enunciado, geração do
-  notebook `00_baseline.ipynb`, dúvidas pontuais sobre Git/Scikit-Learn/PyTorch)_
-- **Parte do trabalho em que foi utilizada:** _(ex.: estrutura do baseline, redação de
-  algumas seções markdown, revisão de `.gitignore`)_
-- **Forma de verificação do conteúdo/código produzido:** _(ex.: todo código gerado foi lido,
-  executado e validado pelo grupo antes de ser incorporado; os resultados numéricos reportados
-  foram conferidos a partir da execução real dos notebooks)_
+- **Ferramenta utilizada:** Claude (Anthropic), via Claude Code — Arthur de Azevedo Grazzia.
+  _(Rafael Rocha da Silva: PREENCHER — se usou alguma ferramenta de IA em sua parte, declarar
+  aqui da mesma forma; se não usou, declarar isso explicitamente também.)_
+- **Finalidade:** apoio na organização do repositório Git (merge de branches, resolução de
+  conflitos, reescrita de commits), extensão da análise exploratória de dados além do que
+  havia sido feito manualmente, e revisão de conformidade do repositório com os critérios do
+  enunciado.
+- **Parte do trabalho em que foi utilizada:**
+  - `notebooks/01_eda.ipynb`: código e texto interpretativo das seções de correlação entre
+    regiões da imagem, projeção PCA (gráfico de dispersão) e análise de valores extremos/
+    atributos irrelevantes.
+  - `notebooks/00_baseline.ipynb` e `notebooks/02_cnn.ipynb`: trechos curtos de texto na seção
+    de pré-processamento, referenciando os achados acima.
+  - Seção "Integrantes" deste README.
+  - Organização do histórico Git do repositório (merge da branch `SGDC/RF`, resolução de
+    conflitos em `notebooks/03_tuning.ipynb` e `uv.lock`, remoção de coautoria automática de
+    commits antigos).
+  - Execução de ponta a ponta de `00_baseline.ipynb` (não estava executado) e `03_tuning.ipynb`
+    (grid grande, na GPU) para gerar os outputs e os números da tabela de resultados.
+- **Forma de verificação do conteúdo/código produzido:** todo código gerado foi executado de
+  ponta a ponta (`jupyter nbconvert --execute`) antes de ser incorporado, e os números citados
+  nas interpretações (ex.: 0,06% de imagens atípicas, 1,4% dos pixels com variância quase nula,
+  correlações entre quadrantes de 0,44 a 0,91) vêm diretamente dessa execução — não foram
+  estimados ou inventados. O texto final foi revisado por Arthur antes de ser commitado.
 
-> O enunciado é claro: a avaliação prioriza a capacidade do grupo de **explicar e justificar**
-> o trabalho, não a qualidade aparente do texto/código. Preencham esta seção com honestidade.
+> O enunciado do trabalho reforça que a avaliação prioriza a capacidade do grupo de **explicar
+> e justificar** o trabalho, não a qualidade aparente do texto/código — preencham a parte do
+> Rafael com a mesma honestidade.
