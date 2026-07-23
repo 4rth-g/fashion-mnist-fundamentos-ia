@@ -5,12 +5,9 @@ Classificação de imagens de **peças de roupa** do **Fashion-MNIST** (Zalando)
 clássicos de Scikit-Learn (`SGDClassifier`, `RandomForestClassifier`). Trabalho da disciplina
 de *Fundamentos de IA*.
 
-O Fashion-MNIST é um substituto *drop-in* do MNIST clássico — mesmo formato (70.000
-imagens 28×28 em tons de cinza, 10 classes), porém **mais difícil** e representativo
-de tarefas reais de visão computacional.
-
-O código foi escrito para ser **simples, legível e reproduzível**, e roda igual em
-Intel Arc, NVIDIA, AMD, Apple Silicon ou CPU — e também no **Google Colab**.
+O Fashion-MNIST é um substituto *drop-in* do MNIST (70.000 imagens 28×28 em tons de cinza,
+10 classes), porém **mais difícil** e representativo de tarefas reais de visão computacional.
+O código é reproduzível e roda em CPU, GPU (Intel/NVIDIA/AMD/Apple) ou no **Google Colab**.
 
 ## Integrantes
 
@@ -68,36 +65,30 @@ executados de qualquer pasta.
 
 ## Como rodar no Google Colab
 
-Cada notebook tem uma célula de *setup* no topo que, ao detectar o Colab, clona este
-repositório e ajusta o ambiente automaticamente. Depois de publicar o projeto no
-GitHub, atualize a variável `REPO_URL` nessa célula e use os links:
+Cada notebook detecta o Colab e clona o repositório automaticamente. Abra pelos badges
+(confira que o nome do repositório nos links e na variável `REPO_URL` de cada notebook bate
+com o do GitHub de vocês):
 
 [![Baseline no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/fashion-mnist-fundamentos-ia/blob/main/notebooks/00_baseline.ipynb)
 [![EDA no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/fashion-mnist-fundamentos-ia/blob/main/notebooks/01_eda.ipynb)
 [![CNN no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/fashion-mnist-fundamentos-ia/blob/main/notebooks/02_cnn.ipynb)
 [![Tuning no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/4rth-g/fashion-mnist-fundamentos-ia/blob/main/notebooks/03_tuning.ipynb)
 
-> ⚠️ Confira se o nome do repositório acima (`fashion-mnist-fundamentos-ia`) bate com o do
-> GitHub de vocês — se o remote real tiver outro nome, atualize tanto estes links quanto a
-> variável `REPO_URL` no topo de cada notebook.
-
 ## Hardware (aceleração opcional)
 
-O Fashion-MNIST treina em poucos minutos **na CPU** — GPU é só um acelerador opcional. O
-`utils.get_device()` detecta e usa automaticamente o melhor dispositivo disponível.
-Por padrão o `pyproject.toml` instala o PyTorch para CPU (universal). Para usar GPU,
-reinstale o `torch` com o índice correto **depois** do `uv sync`:
+O Fashion-MNIST treina em poucos minutos **na CPU** (padrão do `uv sync`); GPU é só um
+acelerador. O `utils.get_device()` escolhe o melhor dispositivo automaticamente. Para usar
+GPU, reinstale o `torch` com o índice correto **depois** do `uv sync`:
 
-| Hardware | Backend | Como instalar o PyTorch |
+| Hardware | Backend | Índice do PyTorch (`uv pip install --reinstall torch torchvision --index-url …`) |
 |---|---|---|
-| **Intel Arc B580** (Windows) | XPU | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/xpu` + [driver Intel Arc](https://www.intel.com/content/www/us/en/download/785597/) |
-| **Intel Arc B580** (Linux, cp313) | XPU | `uv pip install --reinstall torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/xpu` — versões travadas em par: é o build XPU mais recente disponível para Linux/cp313 (torchvision `0.22.0+xpu` exige `torch==2.7.0` exato). Requer runtime Intel (`intel-opencl-icd`, `libze-intel-gpu1`) e driver de kernel `xe` já carregado |
-| **NVIDIA** (Linux/Windows) | CUDA | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu124` |
-| **Google Colab** | CUDA (T4) | já vem pronto — nada a instalar |
-| **AMD** (Linux) | ROCm | `uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2` (aparece como `cuda`) |
-| **AMD** (Windows) | — | sem ROCm estável: use CPU (padrão) ou `torch-directml` |
-| **Apple Silicon** | MPS | `uv pip install --reinstall torch torchvision` (índice padrão) |
-| **Qualquer CPU** | CPU | padrão do `uv sync` — nada a fazer |
+| **NVIDIA** | CUDA | `…/whl/cu124` |
+| **AMD** (Linux) | ROCm | `…/whl/rocm6.2` |
+| **Intel Arc** | XPU | `…/whl/xpu` (Linux/cp313: fixe `torch==2.7.0 torchvision==0.22.0` e runtime Intel) |
+| **Apple Silicon** | MPS | índice padrão (nada a fazer além do `uv sync`) |
+| **Google Colab** | CUDA (T4) | já vem pronto |
+
+> AMD no Windows não tem ROCm estável — use CPU ou `torch-directml`.
 
 ## Modelos utilizados
 
@@ -137,85 +128,62 @@ espelhamento) é aplicada *só no treino* da CNN.
 > validação, ele nunca toca o conjunto de teste (só o modelo escolhido pela validação é
 > avaliado no teste, para não "gastar" essa reserva com mais de um candidato).
 
-A CNN supera o melhor baseline em ~2,9 pontos percentuais no teste (90,24% vs. 87,31%),
-evidência de que a convolução captura padrões que os 784 pixels tratados independentemente
-não capturam. O ajuste de hiperparâmetros (`lr=0.002`, `dropout=0.2`, `weight_decay=0`) leva
-a CNN a 92,04% no teste — um ganho adicional de ~1,8 p.p. sobre a CNN sem tuning, como esperado
-de um ajuste fino sobre uma arquitetura já escolhida. (Pequenas variações entre execuções do
-grid, como as ~0,7 p.p. entre esta rodada e uma anterior, são normais — vêm de aleatoriedade
-residual do treino em GPU e não mudam a conclusão: a configuração `lr=0.002`/`dropout=0.2`
-consistentemente vence na validação.)
+A CNN supera o melhor baseline em ~2,9 p.p. no teste (90,24% vs. 87,31%), evidência de que a
+convolução captura padrões que os 784 pixels tratados independentemente não capturam. O ajuste
+de hiperparâmetros (`lr=0.002`, `dropout=0.2`, `weight_decay=0`) leva a CNN a 92,04% — mais
+~1,8 p.p., como esperado de um ajuste fino sobre uma arquitetura já escolhida. A classe mais
+difícil foi **Camisa** (recall 0,628), confundida com Camiseta/top e Pulôver — coerente com a
+EDA, onde essas classes já apareciam visualmente parecidas.
 
-A classe mais difícil para a CNN foi **Camisa** (recall 0,628), frequentemente confundida com
-Camiseta/top e Pulôver — coerente com a EDA, onde essas classes já apareciam visualmente
-parecidas nas imagens médias por classe.
+## Documentação e materiais
 
-## Documentação complementar
-
-`docs/documentacao.typ` explica o dataset (Fashion-MNIST), cada operação da CNN, a base matemática
-(convolução, ReLU, pooling, softmax, entropia cruzada, backpropagation, Adam) e um
-glossário. O PDF já compilado está versionado em `docs/documentacao.pdf`; para
-regenerá-lo após editar o `.typ`:
-
-```bash
-typst compile docs/documentacao.typ
-```
-
-## Slides e pasta do Drive
-
-- **Slide de apresentação:** `docs/fashion-mnist-slides.pdf` (versionado no repositório).
-- **Pasta do Google Drive:** os materiais complementares (slides em edição, vídeo de
-  apresentação e outros arquivos grandes que não vão para o Git) ficam numa pasta do
-  Google Drive, cujo link está em **`docs/link-drive.txt`**.
+- **`docs/documentacao.pdf`** (compilado de `documentacao.typ`): explica o dataset, cada
+  operação da CNN, a base matemática (convolução, ReLU, pooling, softmax, entropia cruzada,
+  backpropagation, Adam) e um glossário. Regenerar com `typst compile docs/documentacao.typ`.
+- **`docs/fashion-mnist-slides.pdf`**: slide de apresentação (versionado).
+- **`docs/link-drive.txt`**: link da pasta do Google Drive com os materiais grandes que não
+  vão para o Git (slides em edição, vídeo).
 
 ## Divisão das contribuições
 
-_PREENCHER — o que cada integrante fez (ex.: "Fulano: EDA e baseline; Beltrano: CNN e
-tuning; Sicrano: documentação e vídeo"). Todos os integrantes listados aqui precisam também
-aparecer participando ativamente no vídeo — quem não participar da explicação é excluído
-da avaliação, mesmo constando no repositório._
+- **Rafael Rocha da Silva:** baselines clássicos (`SGDClassifier` e `RandomForestClassifier`
+  em `notebooks/00_baseline.ipynb`), incluindo pré-processamento (achatamento, split
+  estratificado) e as seções exigidas pelo enunciado; atualização de notebooks e figuras.
+- **Arthur de Azevedo Grazzia:** estrutura do projeto e utilitários (`src/utils.py`),
+  modelo principal — CNN estilo LeNet (`notebooks/02_cnn.ipynb`) — e o ajuste de
+  hiperparâmetros (`notebooks/03_tuning.ipynb`, grid search na GPU); análise exploratória
+  (`notebooks/01_eda.ipynb`: intensidade, correlação, PCA, outliers); documentação
+  (`docs/documentacao.typ`), README e execução de ponta a ponta dos notebooks.
 
 ## Vídeo
 
-_PREENCHER — link do vídeo (YouTube não listado, Google Drive, etc.). Cada integrante deve se
-identificar, explicar sua parte, justificar ao menos uma decisão técnica e interpretar ao
-menos um resultado._
+O vídeo de apresentação está na **pasta do Google Drive** do projeto (link em
+[`docs/link-drive.txt`](docs/link-drive.txt)):
 
-Link: _PREENCHER_
+<https://drive.google.com/drive/folders/1fnZc1bltQuY7eVhtHnrGgfs78Gn5RABO?usp=drive_link>
+
+No vídeo, cada integrante se identifica, explica sua parte, justifica ao menos uma decisão
+técnica e interpreta ao menos um resultado.
 
 ## Declaração sobre uso de Inteligência Artificial
 
 Em conformidade com o [Código de Conduta da SBC](https://www.sbc.org.br/) para autores, o uso
-de ferramentas de Inteligência Artificial Generativa na escrita e/ou revisão deste trabalho é
-declarado explicitamente abaixo. Nenhuma ferramenta de IA é listada como autora do trabalho, e
-seu uso não isenta os integrantes da responsabilidade pelo conteúdo produzido, incluindo em
-caso de plágio identificado.
+de ferramentas de Inteligência Artificial Generativa neste trabalho é declarado explicitamente
+abaixo. Em todos os casos, a IA foi utilizada **apenas como auxílio ao desenvolvimento** — as
+decisões técnicas, a validação e a responsabilidade pelo conteúdo são inteiramente dos
+integrantes. Nenhuma ferramenta de IA é listada como autora do trabalho, e seu uso não isenta
+os integrantes da responsabilidade pelo conteúdo produzido, incluindo em caso de plágio
+identificado.
 
-- **Ferramenta utilizada:** Claude (Anthropic), via Claude Code — Arthur de Azevedo Grazzia.
-  _(Rafael Rocha da Silva: PREENCHER — se usou alguma ferramenta de IA em sua parte, declarar
-  aqui da mesma forma; se não usou, declarar isso explicitamente também.)_
-- **Finalidade:** apoio na organização do repositório Git (merge de branches, resolução de
-  conflitos, reescrita de commits), extensão da análise exploratória de dados além do que
-  havia sido feito manualmente, e revisão de conformidade do repositório com os critérios do
-  enunciado.
-- **Parte do trabalho em que foi utilizada:**
-  - `notebooks/01_eda.ipynb`: código e texto interpretativo das seções de correlação entre
-    regiões da imagem, projeção PCA (gráfico de dispersão) e análise de valores extremos/
-    atributos irrelevantes.
-  - `notebooks/00_baseline.ipynb` e `notebooks/02_cnn.ipynb`: trechos curtos de texto na seção
-    de pré-processamento, referenciando os achados acima.
-  - Seção "Integrantes" deste README.
-  - Organização do histórico Git do repositório (merge da branch `SGDC/RF`, resolução de
-    conflitos em `notebooks/03_tuning.ipynb` e `uv.lock`, remoção de coautoria automática de
-    commits antigos).
-  - Execução de ponta a ponta de `00_baseline.ipynb` (não estava executado) e `03_tuning.ipynb`
-    (grid grande, na GPU) para gerar os outputs e os números da tabela de resultados.
-- **Forma de verificação do conteúdo/código produzido:** todo código gerado foi executado de
-  ponta a ponta (`jupyter nbconvert --execute`) antes de ser incorporado, e os números citados
-  nas interpretações (ex.: 0,06% de imagens atípicas, 1,4% dos pixels com variância quase nula,
-  correlações entre quadrantes de 0,44 a 0,91) vêm diretamente dessa execução — não foram
-  estimados ou inventados. O texto final foi revisado por Arthur antes de ser commitado.
+| Integrante | Modelo de IA | Auxílio ao desenvolvimento |
+|---|---|---|
+| Arthur de Azevedo Grazzia | Claude (Anthropic), via Claude Code | Organização do repositório Git; extensão da EDA (`01_eda.ipynb`: correlação, PCA, outliers); textos de pré-processamento; documentação (`docs/`) e README; execução dos notebooks. |
+| Rafael Rocha da Silva | Claude (Anthropic) | Apoio nos baselines (`SGDClassifier`, `RandomForestClassifier`) em `00_baseline.ipynb`. |
+
+**Verificação:** todo código gerado foi executado de ponta a ponta
+(`jupyter nbconvert --execute`) antes de ser incorporado, e os números citados nas
+interpretações vêm dessa execução — não foram estimados. O texto final foi revisado pelos
+integrantes.
 
 > O enunciado do trabalho reforça que a avaliação prioriza a capacidade do grupo de **explicar
-> e justificar** o trabalho, não a qualidade aparente do texto/código — preencham a parte do
-> Rafael com a mesma honestidade.
+> e justificar** o trabalho, não a qualidade aparente do texto/código.

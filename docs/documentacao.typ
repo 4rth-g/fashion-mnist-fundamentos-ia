@@ -5,6 +5,7 @@
 #set document(
   title: "Fashion-MNIST + CNN — Documentação",
   author: ("Arthur de Azevedo Grazzia", "Rafael Rocha da Silva"),
+  date: none, // PDF reprodutível (sem timestamp de criação) → mesmo .typ gera os mesmos bytes
 )
 #set page(numbering: "1", margin: 2.2cm)
 #set text(font: "New Computer Modern", size: 11pt, lang: "pt")
