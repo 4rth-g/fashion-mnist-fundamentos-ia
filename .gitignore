@@ -32,3 +32,7 @@ docs/*.pdf
 .idea/
 .vscode/
 .DS_Store
+
+# W&B (runs offline) e bancos de experimento (recriados)
+wandb/
+*.db

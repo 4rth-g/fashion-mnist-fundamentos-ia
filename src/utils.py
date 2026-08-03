@@ -17,12 +17,17 @@ Apple Silicon (MPS) e CPU — a mesma linha de código roda em qualquer um.
 
 from __future__ import annotations
 
+import json
 import os
 import random
+import sqlite3
+import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
 import torch
+from scipy.stats import binom, chi2
 from torch.utils.data import DataLoader, Subset, random_split
 from torchvision import datasets, transforms
 
@@ -229,6 +234,100 @@ def make_dataloaders(
     val_loader = DataLoader(val_set, batch_size=256, shuffle=False, **kw)
     test_loader = DataLoader(test, batch_size=256, shuffle=False, **kw)
     return train_loader, val_loader, test_loader
+
+
+def mcnemar_test(
+    y_true: np.ndarray | list,
+    preds_a: np.ndarray | list,
+    preds_b: np.ndarray | list,
+) -> dict:
+    """McNemar pareado entre dois classificadores no MESMO conjunto de teste.
+
+    Retorna {'n01','n10','statistic','p_value','method'}.
+    Usa binomial exata quando discordantes (n01+n10) < 25; senão chi2 com correção de continuidade.
+    """
+    yt = np.asarray(y_true)
+    pa = np.asarray(preds_a)
+    pb = np.asarray(preds_b)
+
+    correct_a = yt == pa
+    correct_b = yt == pb
+
+    n01 = int(np.sum(~correct_a & correct_b))
+    n10 = int(np.sum(correct_a & ~correct_b))
+    disc = n01 + n10
+
+    if disc < 25:
+        method = "binom_exact"
+        statistic = float(min(n01, n10))
+        if disc == 0:
+            p_val = 1.0
+        else:
+            p_val = min(1.0, float(2 * binom.cdf(statistic, disc, 0.5)))
+    else:
+        method = "chi2_continuity"
+        statistic = float((abs(n01 - n10) - 1) ** 2 / disc)
+        p_val = float(chi2.sf(statistic, 1))
+
+    return {
+        "n01": n01,
+        "n10": n10,
+        "statistic": statistic,
+        "p_value": p_val,
+        "method": method,
+    }
+
+
+def log_experiment(
+    model_name: str, config: dict, metrics: dict, seed: int = SEED
+) -> None:
+    """Registra metadados de treino num SQLite append-only (results/experiment_tracker.db).
+
+    Salva timestamp, hash do commit (marcado -dirty se houver mudanças não
+    commitadas), configuração e métricas finais — assim nenhuma avaliação se
+    perde ao longo do tempo. Mesmo esquema do projeto mnist-study.
+    """
+    db_path = RESULTS_DIR / "experiment_tracker.db"
+    db_path.parent.mkdir(exist_ok=True, parents=True)
+
+    commit_hash = os.environ.get("FASHION_GIT_SHA")
+    if not commit_hash:
+        try:
+            sha = subprocess.check_output(
+                ["git", "rev-parse", "--short", "HEAD"], cwd=PROJECT_ROOT, text=True
+            ).strip()
+            dirty = subprocess.call(["git", "diff", "--quiet"], cwd=PROJECT_ROOT) != 0
+            commit_hash = f"{sha}{'-dirty' if dirty else ''}"
+        except Exception:
+            commit_hash = "unknown"
+
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            commit_hash TEXT,
+            model_name TEXT,
+            seed INTEGER,
+            config JSON,
+            metrics JSON
+        )
+    """)
+    c.execute(
+        "INSERT INTO experiments (timestamp, commit_hash, model_name, seed, config, metrics) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (
+            datetime.now(UTC).isoformat(),
+            commit_hash,
+            model_name,
+            seed,
+            json.dumps(config),
+            json.dumps(metrics),
+        ),
+    )
+    conn.commit()
+    conn.close()
 
 
 if __name__ == "__main__":
